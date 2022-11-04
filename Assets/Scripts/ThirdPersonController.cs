@@ -10,11 +10,13 @@ public class ThirdPersonController : MonoBehaviour
     public Transform LookAtTransform;
 
     //variables para controlar velocidad, altura de salto y gravedad
+    [Header("Fisicas")]
     public float speed = 5;
     public float jumpHeight = 1;
     public float gravity = -9.81f;
 
     //variables para el ground sensor
+    [Header("Sensor Suelo")]
     public bool isGrounded;
     public Transform groundSensor;
     public float sensorRadius = 0.1f;
@@ -30,6 +32,8 @@ public class ThirdPersonController : MonoBehaviour
     public Cinemachine.AxisState yAxis;
 
     public GameObject[] cameras;
+
+    public LayerMask rayLayer;
     
     // Start is called before the first frame update
     void Start()
@@ -38,7 +42,7 @@ public class ThirdPersonController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         anim = GetComponentInChildren <Animator>();
         //Con esto podemos esconder el icono del raton para que no moleste
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
@@ -51,6 +55,34 @@ public class ThirdPersonController : MonoBehaviour
         
         //Lamamaos la funcion de salto
         Jump();
+
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, transform.forward, out hit, 20f, rayLayer))
+        {
+            Vector3 hitPosition = hit.point;
+            float hitDistance = hit.distance;
+            string hitName = hit.transform.name;
+            /*Animator hitAnimator = hit.transform.GameObject.GetComponent<Animator>();
+            it.transform.GameObject.GetComponent<ScriptRandom>().FuncionRandom();*/
+            Debug.DrawRay(transform.position, transform.forward * 20f,  Color.green);
+            Debug.Log ("posicion impacto:" + hitPosition + "distancia impacto:" + hitDistance + "nombre objecto:" + hitName);
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.forward * 20f,  Color.red);
+        }
+        if(Input.GetButtonDown("Fire1"))
+        {
+             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+             RaycastHit hit2;
+             if(Physics.Raycast(ray,out hit2))
+             {
+                Debug.Log(hit2.point);
+                transform.position = new Vector3(hit2.point.x, transform.position.y, hit2.point.z);
+             }
+        }
+      
+        
     }
 
     void Movement()
@@ -161,7 +193,19 @@ public class ThirdPersonController : MonoBehaviour
         //Le asignamos a la boleana isGrounded su valor dependiendo del CheckSpher
         //CheckSphere crea una esfera pasandole la poscion, radio y layer con la que queremos que interactue
         //si la esfera entra en contacto con la capa que le digamos convertira nuestra boleana en true y si no entra en contacto en false
-        isGrounded = Physics.CheckSphere(groundSensor.position, sensorRadius, ground);
+        //isGrounded = Physics.CheckSphere(groundSensor.position, sensorRadius, ground);
+        //isGrounded = Physics.Raycast(groundSensor.position, Vector3.down, sensorRadius, ground);
+        if(Physics.Raycast(groundSensor.position, Vector3.down, sensorRadius, ground))
+        {
+            isGrounded = true;
+            Debug.DrawRay(groundSensor.position, Vector3.down * sensorRadius, Color.green);
+        }
+        else
+        {
+            isGrounded = false;
+            Debug.DrawRay(groundSensor.position, Vector3.down * sensorRadius, Color.red);
+        }
+
         anim.SetBool("Salto", !isGrounded);
         //Si estamos en el suelo y playervelocity es menor que 0 hacemos que le vuelva a poner el valor a 0
         //esto es para evitar que siga aplicando fuerza de gravedad cuando estemos en el suelo y evitar comportamientos extraños
@@ -184,5 +228,14 @@ public class ThirdPersonController : MonoBehaviour
         //como playervelocity en el eje Y es un valor negativo esto nos empuja al personaje hacia abajo
         //asi le aplicaremos la gravedad
         controller.Move(playerVelocity * Time.deltaTime);
+    }
+
+    void OnDrawGizmosSelected() 
+    {
+        Gizmos.color =  Color.yellow;
+        Gizmos.DrawRay(transform.position, transform.forward * 20f);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(groundSensor.position, sensorRadius);
     }
 }
