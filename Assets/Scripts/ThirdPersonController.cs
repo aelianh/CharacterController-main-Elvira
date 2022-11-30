@@ -14,6 +14,11 @@ public class ThirdPersonController : MonoBehaviour
     public float speed = 5;
     public float jumpHeight = 1;
     public float gravity = -9.81f;
+    private Rigidbody[] ragdollBodies;
+    private SphereCollider[] sphereCollider;
+    private CapsuleCollider[] capsuleCollider;
+    private bool isRagdoll = false;
+
 
     //variables para el ground sensor
     [Header("Sensor Suelo")]
@@ -43,6 +48,23 @@ public class ThirdPersonController : MonoBehaviour
         anim = GetComponentInChildren <Animator>();
         //Con esto podemos esconder el icono del raton para que no moleste
         //Cursor.lockState = CursorLockMode.Locked;
+
+        ragdollBodies = GetComponentsInChildren<Rigidbody>();
+        sphereCollider = GetComponentsInChildren<SphereCollider>();
+        capsuleCollider = GetComponentsInChildren<CapsuleCollider>();
+
+        foreach(Rigidbody body in ragdollBodies)
+        {
+            body.isKinematic = true;
+        }
+        foreach(SphereCollider sphere in sphereCollider)
+        {
+            sphere.enabled = false;
+        }
+        foreach(CapsuleCollider capsule in capsuleCollider)
+        {
+            capsule.enabled = false;
+        }
     }
 
     // Update is called once per frame
@@ -55,6 +77,8 @@ public class ThirdPersonController : MonoBehaviour
         
         //Lamamaos la funcion de salto
         Jump();
+
+        Ragdolls();
 
         RaycastHit hit;
         if(Physics.Raycast(transform.position, transform.forward, out hit, 20f, rayLayer))
@@ -237,5 +261,27 @@ public class ThirdPersonController : MonoBehaviour
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(groundSensor.position, sensorRadius);
+    }
+
+    void Ragdolls()
+    {
+        if(Input.GetKeyDown(KeyCode.F))
+        {
+            foreach(Rigidbody body in ragdollBodies)
+            {
+            body.isKinematic = false;
+            }
+            foreach(SphereCollider sphere in sphereCollider)
+            {
+            sphere.enabled = true;
+            }
+            foreach(CapsuleCollider capsule in capsuleCollider)
+            {
+            capsule.enabled = true;
+            }
+
+            controller.enabled = false;
+            anim.enabled = false;
+        }
     }
 }
