@@ -95,7 +95,7 @@ public class ThirdPersonController : MonoBehaviour
         {
             Debug.DrawRay(transform.position, transform.forward * 20f,  Color.red);
         }
-        if(Input.GetButtonDown("Fire1"))
+        /*if(Input.GetButtonDown("Fire1"))
         {
              Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
              RaycastHit hit2;
@@ -104,7 +104,7 @@ public class ThirdPersonController : MonoBehaviour
                 Debug.Log(hit2.point);
                 transform.position = new Vector3(hit2.point.x, transform.position.y, hit2.point.z);
              }
-        }
+        }*/
       
         
     }
